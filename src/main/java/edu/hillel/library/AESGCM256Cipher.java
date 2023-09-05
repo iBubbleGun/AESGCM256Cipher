@@ -32,7 +32,7 @@ import java.security.SecureRandom;
 import java.util.Base64;
 
 /**
- * @author Tymur Kosiak ( <a href="https://github.com/iBubbleGun">iBubbleGun GitHub</a> )
+ * @author Tymur Kosiak <a href="https://github.com/iBubbleGun">iBubbleGun</a>
  */
 public class AESGCM256Cipher {
     private final int GCM_IV_LENGTH;
