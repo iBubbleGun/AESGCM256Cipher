@@ -35,36 +35,34 @@ import java.util.Base64;
  * @author Tymur Kosiak <a href="https://github.com/iBubbleGun">iBubbleGun</a>
  */
 public class AESGCM256Cipher {
-    private final int GCM_IV_LENGTH;
-    private final int GCM_TAG_LENGTH;
+    private static final int GCM_IV_LENGTH = 12;
+    private static final int GCM_TAG_LENGTH = 16;
     private final String ALGORITHM;
 
     public AESGCM256Cipher() {
-        this.GCM_IV_LENGTH = 12;
-        this.GCM_TAG_LENGTH = 16;
         this.ALGORITHM = "AES/GCM/NoPadding";
     }
 
     public String encrypt(String plaintext, SecretKey secretKey) throws Exception {
         Cipher cipher = Cipher.getInstance(this.ALGORITHM);
         byte[] iv = generateIV();
-        GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(this.GCM_TAG_LENGTH * 8, iv);
+        GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, iv);
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, gcmParameterSpec);
         byte[] encryptedBytes = cipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
-        byte[] combinedIVAndCipherText = new byte[this.GCM_IV_LENGTH + encryptedBytes.length];
-        System.arraycopy(iv, 0, combinedIVAndCipherText, 0, this.GCM_IV_LENGTH);
-        System.arraycopy(encryptedBytes, 0, combinedIVAndCipherText, this.GCM_IV_LENGTH, encryptedBytes.length);
+        byte[] combinedIVAndCipherText = new byte[GCM_IV_LENGTH + encryptedBytes.length];
+        System.arraycopy(iv, 0, combinedIVAndCipherText, 0, GCM_IV_LENGTH);
+        System.arraycopy(encryptedBytes, 0, combinedIVAndCipherText, GCM_IV_LENGTH, encryptedBytes.length);
         return Base64.getEncoder().encodeToString(combinedIVAndCipherText);
     }
 
     public String decrypt(String encryptedText, SecretKey secretKey) throws Exception {
         byte[] encryptedBytes = Base64.getDecoder().decode(encryptedText);
-        byte[] iv = new byte[this.GCM_IV_LENGTH];
+        byte[] iv = new byte[GCM_IV_LENGTH];
         System.arraycopy(encryptedBytes, 0, iv, 0, GCM_IV_LENGTH);
         Cipher cipher = Cipher.getInstance(this.ALGORITHM);
-        GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(this.GCM_TAG_LENGTH * 8, iv);
+        GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, iv);
         cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmParameterSpec);
-        byte[] decryptedBytes = cipher.doFinal(encryptedBytes, this.GCM_IV_LENGTH, encryptedBytes.length - this.GCM_IV_LENGTH);
+        byte[] decryptedBytes = cipher.doFinal(encryptedBytes, GCM_IV_LENGTH, encryptedBytes.length - GCM_IV_LENGTH);
         return new String(decryptedBytes, StandardCharsets.UTF_8);
     }
 
@@ -75,7 +73,7 @@ public class AESGCM256Cipher {
     }
 
     private byte[] generateIV() {
-        byte[] iv = new byte[this.GCM_IV_LENGTH];
+        byte[] iv = new byte[GCM_IV_LENGTH];
         SecureRandom random = new SecureRandom();
         random.nextBytes(iv);
         return iv;
