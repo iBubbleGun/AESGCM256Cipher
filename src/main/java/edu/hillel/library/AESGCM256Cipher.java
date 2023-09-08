@@ -34,6 +34,8 @@ import java.security.SecureRandom;
 import java.util.Base64;
 
 /**
+ * The type Aesgcm 256 cipher.
+ *
  * @author Tymur Kosiak <a href="https://github.com/iBubbleGun">iBubbleGun</a>
  */
 public class AESGCM256Cipher {
@@ -41,10 +43,21 @@ public class AESGCM256Cipher {
     private static final int GCM_TAG_LENGTH = 16;
     private final String ALGORITHM;
 
+    /**
+     * Instantiates a new Aesgcm 256 cipher.
+     */
     public AESGCM256Cipher() {
         this.ALGORITHM = "AES/GCM/NoPadding";
     }
 
+    /**
+     * Encrypt string.
+     *
+     * @param plaintext the plaintext
+     * @param secretKey the secret key
+     * @return the string
+     * @throws Exception the exception
+     */
     public String encrypt(@NotNull String plaintext, SecretKey secretKey) throws Exception {
         Cipher cipher = Cipher.getInstance(this.ALGORITHM);
         byte[] iv = generateIV();
@@ -57,6 +70,14 @@ public class AESGCM256Cipher {
         return Base64.getEncoder().encodeToString(combinedIVAndCipherText);
     }
 
+    /**
+     * Decrypt string.
+     *
+     * @param encryptedText the encrypted text
+     * @param secretKey     the secret key
+     * @return the string
+     * @throws Exception the exception
+     */
     public String decrypt(String encryptedText, SecretKey secretKey) throws Exception {
         byte[] encryptedBytes = Base64.getDecoder().decode(encryptedText);
         byte[] iv = new byte[GCM_IV_LENGTH];
@@ -68,6 +89,13 @@ public class AESGCM256Cipher {
         return new String(decryptedBytes, StandardCharsets.UTF_8);
     }
 
+    /**
+     * Generate aes key secret key.
+     *
+     * @param KEY_SIZE the key size
+     * @return the secret key
+     * @throws Exception the exception
+     */
     public SecretKey generateAESKey(final int KEY_SIZE) throws Exception {
         KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
         keyGenerator.init(KEY_SIZE);
