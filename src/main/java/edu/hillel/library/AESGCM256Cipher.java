@@ -23,6 +23,8 @@
  */
 package edu.hillel.library;
 
+import org.jetbrains.annotations.NotNull;
+
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -43,7 +45,7 @@ public class AESGCM256Cipher {
         this.ALGORITHM = "AES/GCM/NoPadding";
     }
 
-    public String encrypt(String plaintext, SecretKey secretKey) throws Exception {
+    public String encrypt(@NotNull String plaintext, SecretKey secretKey) throws Exception {
         Cipher cipher = Cipher.getInstance(this.ALGORITHM);
         byte[] iv = generateIV();
         GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, iv);
@@ -72,7 +74,7 @@ public class AESGCM256Cipher {
         return keyGenerator.generateKey();
     }
 
-    private byte[] generateIV() {
+    private byte @NotNull [] generateIV() {
         byte[] iv = new byte[GCM_IV_LENGTH];
         SecureRandom random = new SecureRandom();
         random.nextBytes(iv);
