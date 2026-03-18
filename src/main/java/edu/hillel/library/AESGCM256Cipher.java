@@ -25,11 +25,17 @@ package edu.hillel.library;
 
 import org.jetbrains.annotations.NotNull;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 
@@ -41,25 +47,28 @@ import java.util.Base64;
 public class AESGCM256Cipher {
     private static final int GCM_IV_LENGTH = 12;
     private static final int GCM_TAG_LENGTH = 16;
-    private final String ALGORITHM;
-
+    private final String algorithm;
+    private final SecureRandom random;
+    
     /**
      * Instantiates a new Aesgcm 256 cipher.
      */
     public AESGCM256Cipher() {
-        this.ALGORITHM = "AES/GCM/NoPadding";
+        this.algorithm = "AES/GCM/NoPadding";
+        this.random = new SecureRandom();
     }
-
+    
     /**
      * Encrypt string.
      *
      * @param plaintext the plaintext
      * @param secretKey the secret key
      * @return the string
-     * @throws Exception the exception
      */
-    public String encrypt(@NotNull String plaintext, SecretKey secretKey) throws Exception {
-        Cipher cipher = Cipher.getInstance(this.ALGORITHM);
+    public String encrypt(@NotNull String plaintext, SecretKey secretKey) throws NoSuchPaddingException,
+            NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
+            IllegalBlockSizeException, BadPaddingException {
+        Cipher cipher = Cipher.getInstance(this.algorithm);
         byte[] iv = generateIV();
         GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, iv);
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, gcmParameterSpec);
@@ -69,42 +78,41 @@ public class AESGCM256Cipher {
         System.arraycopy(encryptedBytes, 0, combinedIVAndCipherText, GCM_IV_LENGTH, encryptedBytes.length);
         return Base64.getEncoder().encodeToString(combinedIVAndCipherText);
     }
-
+    
     /**
      * Decrypt string.
      *
      * @param encryptedText the encrypted text
      * @param secretKey     the secret key
      * @return the string
-     * @throws Exception the exception
      */
-    public String decrypt(String encryptedText, SecretKey secretKey) throws Exception {
+    public String decrypt(String encryptedText, SecretKey secretKey) throws NoSuchPaddingException,
+            NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
+            IllegalBlockSizeException, BadPaddingException {
         byte[] encryptedBytes = Base64.getDecoder().decode(encryptedText);
         byte[] iv = new byte[GCM_IV_LENGTH];
         System.arraycopy(encryptedBytes, 0, iv, 0, GCM_IV_LENGTH);
-        Cipher cipher = Cipher.getInstance(this.ALGORITHM);
+        Cipher cipher = Cipher.getInstance(this.algorithm);
         GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, iv);
         cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmParameterSpec);
         byte[] decryptedBytes = cipher.doFinal(encryptedBytes, GCM_IV_LENGTH, encryptedBytes.length - GCM_IV_LENGTH);
         return new String(decryptedBytes, StandardCharsets.UTF_8);
     }
-
+    
     /**
      * Generate aes key secret key.
      *
      * @param KEY_SIZE the key size
      * @return the secret key
-     * @throws Exception the exception
      */
-    public SecretKey generateAESKey(final int KEY_SIZE) throws Exception {
+    public SecretKey generateAESKey(final int KEY_SIZE) throws NoSuchAlgorithmException {
         KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
         keyGenerator.init(KEY_SIZE);
         return keyGenerator.generateKey();
     }
-
+    
     private byte @NotNull [] generateIV() {
         byte[] iv = new byte[GCM_IV_LENGTH];
-        SecureRandom random = new SecureRandom();
         random.nextBytes(iv);
         return iv;
     }
